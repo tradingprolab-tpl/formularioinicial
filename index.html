@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Onboarding TPL</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--ink:#f3efe9;--mute:#8a847b;--line:#2a2724;--or:#ff6a13;--card:#0d0c0b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:radial-gradient(900px 500px at 85% -10%,rgba(255,106,19,.16),transparent 60%),var(--bg);color:var(--ink);font:500 16px/1.55 Manrope,system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:28px 20px 64px}
+.brand{font:800 14px Syne,sans-serif;letter-spacing:.04em;color:var(--or);margin-bottom:28px}
+.bar{height:3px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.bar i{display:block;height:100%;width:0;background:var(--or);transition:width .4s}
+.cnt{color:var(--mute);font-size:13px;margin-bottom:26px}
+h1{font:800 clamp(30px,7vw,46px)/1.05 Syne,sans-serif;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 30px}
+.f{margin-bottom:26px}
+label.q{display:block;font-weight:600;margin-bottom:10px}
+input[type=text],input[type=number],textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:inherit;padding:13px 14px}
+textarea{min-height:92px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--or);outline-offset:1px;border-color:transparent}
+.ch{display:flex;flex-wrap:wrap;gap:8px}
+.ch button{background:var(--card);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:15px;padding:10px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.ch button:hover{border-color:var(--or)}
+.ch button:focus-visible,.btn:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+.ch button.on{background:var(--or);border-color:var(--or);color:#000;font-weight:600}
+.sc button{min-width:48px;border-radius:10px}
+.sl{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;margin-top:6px}
+.nav{display:flex;gap:12px;margin-top:36px}
+.btn{font:700 16px Syne,sans-serif;border:0;border-radius:12px;padding:16px 22px;cursor:pointer}
+.go{background:var(--or);color:#000;flex:1}
+.go:hover{filter:brightness(1.08)}
+.bk{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.err{color:#ff8a8a;font-size:14px;margin-top:14px;min-height:20px}
+.fin{display:none;text-align:left}
+.fin textarea{min-height:200px;font-size:13px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="brand">TRADING PRO LAB</div>
+<div class="bar"><i id="pg"></i></div>
+<div class="cnt" id="cnt"></div>
+<div id="app"></div>
+<div class="fin" id="fin">
+<h1>Listo.</h1>
+<p class="sub">Si WhatsApp no se abrió, copia el mensaje y pégalo a Williams.</p>
+<textarea id="out" readonly></textarea>
+<div class="nav"><button class="btn go" id="cp">Copiar mensaje</button><button class="btn bk" id="rs">Enviar otra vez</button></div>
+</div>
+</div>
+<script>
+const WA="50371179235";
+const S=[
+{t:"Quién eres",s:"Lo básico. Corto y directo.",f:[
+{id:"nombre",q:"Nombre completo",k:"text"},
+{id:"edad",q:"Edad",k:"number"},
+{id:"pais",q:"País y ciudad",k:"text"},
+{id:"dedica",q:"¿A qué te dedicas hoy?",k:"text"},
+{id:"horasTrab",q:"¿Cuánto tiempo libre tienes para trading por semana?",k:"choice",o:["Menos de 5 h","5 a 10 h","10 a 20 h","Más de 20 h"]}]},
+{t:"Cómo eres",s:"Sé honesto. Aquí se arma tu ruta.",f:[
+{id:"persona",q:"¿Cómo te consideras como persona?",k:"multi",o:["Tranquilo","Ansioso","Impulsivo","Analítico","Inseguro","Disciplinado","Impaciente","Perfeccionista"]},
+{id:"ansiedad",q:"¿Qué tanta ansiedad sientes cuando operas?",k:"scale",lo:"Ninguna",hi:"Muchísima"},
+{id:"perdida",q:"Después de una pérdida, ¿qué haces?",k:"choice",o:["Paro y reviso","Entro otra vez para recuperar","Me bloqueo y no opero","Cambio de estrategia","Depende del día"]},
+{id:"dif",q:"¿Qué te hace diferente a otros traders? Tu punto diferencial.",k:"textarea"},
+{id:"frust",q:"¿Qué es lo que más te frustra de tu trading hoy?",k:"textarea"}]},
+{t:"Dónde estás en trading",s:"El punto exacto de partida.",f:[
+{id:"tiempo",q:"¿Cuánto tiempo llevas en trading?",k:"choice",o:["Menos de 6 meses","6 a 12 meses","1 a 2 años","2 a 4 años","Más de 4 años"]},
+{id:"mercados",q:"¿Qué mercados operas?",k:"multi",o:["Forex","Índices","Oro","Cripto","Acciones","Futuros"]},
+{id:"cuenta",q:"¿Con qué tipo de cuenta operas?",k:"choice",o:["Demo","Capital propio","Fondeo","Capital propio y fondeo","Ninguna aún"]},
+{id:"capital",q:"¿Con cuánto capital operas o piensas operar? (USD)",k:"text"},
+{id:"retiro",q:"¿Has hecho algún retiro?",k:"choice",o:["Nunca","Uno aislado","Varios, sin constancia","Retiro de forma constante"]},
+{id:"chall",q:"¿Cuántos challenges de fondeo has fallado?",k:"choice",o:["Ninguno","1 a 2","3 a 5","Más de 5","No he hecho"]},
+{id:"estrat",q:"¿Qué estrategia usas hoy? Explícala en pocas líneas.",k:"textarea"},
+{id:"riesgo",q:"¿Cuánto arriesgas por operación?",k:"text"},
+{id:"journal",q:"¿Llevas journal de tus operaciones?",k:"choice",o:["No","A veces","Siempre"]}]},
+{t:"Qué te frena",s:"Aquí está el cuello de botella.",f:[
+{id:"errores",q:"¿Qué errores repites más?",k:"multi",o:["FOMO","Revenge trading","Sobreoperar","Romper mi plan","Mover el stop loss","Cambiar de estrategia","Riesgo inconsistente","No registrar nada"]},
+{id:"cuello",q:"¿Dónde sientes que está tu problema principal?",k:"choice",o:["Mente","Método","Capital y riesgo","No lo sé"]},
+{id:"cambio",q:"¿Qué cambiarías de tu trading si pudieras hoy?",k:"textarea"}]},
+{t:"A dónde quieres llegar",s:"Último paso.",f:[
+{id:"meta",q:"¿Qué quieres lograr en los próximos 6 meses?",k:"textarea"},
+{id:"meta2",q:"Meta principal",k:"choice",o:["Primer retiro","Pasar un fondeo","Consistencia","Escalar capital","Vivir del trading"]},
+{id:"espera",q:"¿Qué esperas de la mentoría?",k:"textarea"},
+{id:"nocumple",q:"Si no cambias nada, ¿qué pasa en un año?",k:"textarea"}]}
+];
+const A={};let n=0;
+const $=id=>document.getElementById(id),app=$("app");
+function render(){
+const s=S[n];$("pg").style.width=((n)/S.length*100)+"%";
+$("cnt").textContent="Paso "+(n+1)+" de "+S.length;
+app.innerHTML="";
+const h=document.createElement("h1");h.textContent=s.t;app.append(h);
+const p=document.createElement("p");p.className="sub";p.textContent=s.s;app.append(p);
+s.f.forEach(f=>{
+const d=document.createElement("div");d.className="f";
+const l=document.createElement("label");l.className="q";l.textContent=f.q;d.append(l);
+if(f.k==="text"||f.k==="number"){const i=document.createElement("input");i.type=f.k==="number"?"number":"text";i.value=A[f.id]||"";i.setAttribute("aria-label",f.q);i.oninput=()=>A[f.id]=i.value.trim();d.append(i)}
+else if(f.k==="textarea"){const i=document.createElement("textarea");i.value=A[f.id]||"";i.setAttribute("aria-label",f.q);i.oninput=()=>A[f.id]=i.value.trim();d.append(i)}
+else{
+const w=document.createElement("div");w.className="ch"+(f.k==="scale"?" sc":"");
+const opts=f.k==="scale"?["1","2","3","4","5"]:f.o;
+opts.forEach(o=>{const b=document.createElement("button");b.type="button";b.textContent=o;
+const sel=()=>f.k==="multi"?(A[f.id]||[]).includes(o):A[f.id]===o;
+if(sel())b.classList.add("on");
+b.onclick=()=>{if(f.k==="multi"){const a=A[f.id]||[];A[f.id]=a.includes(o)?a.filter(x=>x!==o):[...a,o]}else A[f.id]=o;
+[...w.children].forEach((c,j)=>c.classList.toggle("on",f.k==="multi"?(A[f.id]||[]).includes(opts[j]):A[f.id]===opts[j]))};
+w.append(b)});d.append(w);
+if(f.k==="scale"){const r=document.createElement("div");r.className="sl";r.innerHTML="<span></span><span></span>";r.children[0].textContent=f.lo;r.children[1].textContent=f.hi;d.append(r)}}
+app.append(d)});
+const e=document.createElement("div");e.className="err";e.id="err";e.setAttribute("role","alert");app.append(e);
+const nv=document.createElement("div");nv.className="nav";
+if(n>0){const b=document.createElement("button");b.className="btn bk";b.textContent="Atrás";b.onclick=()=>{n--;render();scrollTo(0,0)};nv.append(b)}
+const g=document.createElement("button");g.className="btn go";g.textContent=n===S.length-1?"Finalizar y enviar a WhatsApp":"Siguiente";
+g.onclick=()=>{if(!ok())return;if(n<S.length-1){n++;render();scrollTo(0,0)}else send()};
+nv.append(g);app.append(nv)}
+function empty(f){const v=A[f.id];return !v||(Array.isArray(v)&&!v.length)}
+function ok(){const m=S[n].f.filter(empty);if(m.length){$("err").textContent="Falta responder: "+m.map(f=>f.q).join(" | ");return false}return true}
+function msg(){let t="*ONBOARDING TPL*\n";
+S.forEach(s=>{t+="\n*"+s.t.toUpperCase()+"*\n";s.f.forEach(f=>{const v=A[f.id];t+="- "+f.q+"\n  "+(Array.isArray(v)?v.join(", "):v)+(f.k==="scale"?" / 5":"")+"\n"})});return t}
+function send(){const t=msg();$("out").value=t;$("pg").style.width="100%";
+app.style.display="none";$("cnt").style.display="none";$("fin").style.display="block";
+window.open("https://wa.me/"+WA+"?text="+encodeURIComponent(t),"_blank")}
+$("cp").onclick=async()=>{try{await navigator.clipboard.writeText($("out").value);$("cp").textContent="Copiado"}catch(e){$("out").select()}};
+$("rs").onclick=()=>window.open("https://wa.me/"+WA+"?text="+encodeURIComponent($("out").value),"_blank");
+render();
+</script>
+</body>
+</html>
